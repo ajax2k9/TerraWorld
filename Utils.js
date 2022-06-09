@@ -4,6 +4,14 @@ function XN360(angle){
     return angle;
 }
 
+function degs(radians){
+    return radians * 180/PI;
+}
+
+function rads(degs){
+    return degs * PI/180;
+}
+
 function cosd(angle){
     return Math.cos(angle *PI/180);
 }

@@ -3,10 +3,38 @@ let bMenu;
 let tMenu;
 let imgs = [];
 let icons = {};
+let tooltips=[];
 const LAND = 0;
 const FARM = 1;
 const BUILD = 2;
 const TOWN = 3;
+
+
+class ToolTip{
+    constructor(x,y,w,h,desc){
+        this.x=x;
+        this.y=y;
+        this.x2=w+x;
+        this.y2=h+y;
+
+        this.desc=desc;
+        tooltips.push(this);
+    }
+
+    Draw(){
+        fill(255,255,255);
+        textAlign(LEFT,CENTER);
+        textSize(14);
+        textStyle(NORMAL);
+        text(this.desc,10,60);
+    }
+    Hover(){
+
+        if(mouseX > this.x2 || mouseX < this.x) return false; 
+        if(mouseY > this.y2 || mouseY < this.y) return false;
+        return true;
+    }
+}
 
 class Spinner{
     constructor(_x,_y){
@@ -19,9 +47,10 @@ class Spinner{
 
         for(let i = 0; i<8; i++){
             let a = 360/8 * i           
-            this.modes.push({index:i,ang:a,name:"farm"});
+            this.modes.push({index:i,ang:a,name:"farm",size:1,unlocked:false});
         }
-
+        this.modes[FARM].unlocked = true;
+        this.modes[LAND].unlocked = true;
     }
 
     Rotate(right = true){
@@ -43,12 +72,20 @@ class Spinner{
         strokeWeight(2);
         circle(this.x,this.y,300);
         circle(this.x,this.y,100);
-        
         this.modes.forEach( m=>{
             let ang = this.angle + m.ang;
-            let c = Cartesian(100,ang); 
-            circle(c.x+this.x,c.y+this.y,70);
-            image(imgs[m.index],c.x+this.x-imgs[m.index].width/2,c.y+this.y-imgs[m.index].height/2);
+            
+            if(this.activeMode == m.index){
+                m.size += (1.25 - m.size)/20;
+            } else {
+                m.size += (1 - m.size)/20;
+            }
+            let c = Cartesian(100*m.size,ang);
+            circle(c.x+this.x,c.y+this.y,70*m.size);
+
+            if(m.unlocked){
+                image(imgs[m.index],c.x+this.x-imgs[m.index].width/2,c.y+this.y-imgs[m.index].height/2);
+            }
         });
 
         if(abs(this.angle - this.desiredAngle)<0.1){
@@ -57,6 +94,20 @@ class Spinner{
         }
     }
 }
+
+let resX = 0;
+let resSpacing = 70;
+let tOffs = 20;
+
+function Resource(icon,res,desc){
+    image(icons[icon],resX,5,32,32);
+    text(DrawNumber(res),resX+tOffs,30);
+    new ToolTip(resX,0,50,50,icon);
+    
+    resX+=resSpacing;
+} 
+
+
 function DrawResources(){
     noStroke();
     fill(100,100,255,40);
@@ -67,27 +118,17 @@ function DrawResources(){
     textSize(18);
     textStyle(BOLD);
 
-    image(icons["water"],5,5);
-    text(lake.toPrecision(3),40,25);
-    
-    image(icons["oxygen"],120,5);
-    text(oxygen.toPrecision(3),160,25);
+    resX = 0;
 
-    image(icons["plants"],230,5);
-    text(food.toPrecision(3),265,25);
-
-    image(icons["science"],340,5);
-    text(science.toPrecision(3),375,25);
-
-    image(icons["ore"],450,5);
-    text(ore.toPrecision(3),490,25);
-
-    image(icons["metal"],560,5);
-    text(metal.toPrecision(3),605,25);
-
-    image(icons["wood"],670,5);
-    text(wood.toPrecision(3),720,25);
-  
+    Resource("water",lake);
+    Resource("oxygen",oxygen);
+    Resource("plants",plants);
+    Resource("bread",food);
+    Resource("science",science);
+    Resource("ore",ore);
+    Resource("metal",metal);
+    Resource("wood",wood);  
+    Resource("trees",trees);  
 }
 
 class BuildMenu{
@@ -154,18 +195,22 @@ class BuildMenu{
     }
 
     Draw(){
+        textStyle(NORMAL);
         noStroke();
         fill(0,0,255,100);
         rect(this.x,this.y,width,height-this.y);
         this.buttons.forEach(b=>{
             b.Draw();
             if(b.Hover()){
-                let x = 150;
+                
+                fill(255,255,255);
+                text("cost :",230,730);
+                
+                let x = 260;
                 let y = 700;
-    
+
                 b.reqs.forEach(r=>{
                     r.Draw(x,y);
-
                     x+=60;
                 });
             }
@@ -179,7 +224,7 @@ class TownMenu{
     constructor(_x,_y){
         this.buttons = [];
         this.x = _x;
-        this.y= _y;
+        this.y = _y;
         this.tabs=[];
         let spacing = 60;
         let offsX = 310;
@@ -200,7 +245,7 @@ class TownMenu{
     
     Draw(){
         noStroke();
-        fill(0,0,255,100);
+        fill(0,0,100,255);
         rect(this.x,this.y,width,height-this.y);
         image(icons["population"],this.x+150,this.y+10,32,32);
 
@@ -217,7 +262,6 @@ class TownMenu{
 
 }
 function SetupUI(){
-  //  new Button(20,20,100,20).Name("test").SetCallback(()=>{console.log("clicked");});
   spinner = new Spinner(0,height);
   bMenu = new BuildMenu(0,height-50);
   tMenu = new TownMenu(0,height-80);
@@ -240,15 +284,45 @@ class ItemStack{
 }
 
 function DrawUI(){
-    if(spinner.activeMode == BUILD){
+
+    noFill();
+    stroke(255,255,255);
+    arc(spinner.x,spinner.y,340,340,rads(-60),rads(-30));
+    let c1 = Cartesian(170,-20);
+    noStroke();
+    fill(255,255,255);
+    textAlign(CENTER,CENTER);
+    let c2 = Cartesian(170,-70);
+    text("E",spinner.x+c1.x,spinner.y + c1.y);
+    text("Q",spinner.x+c2.x,spinner.y + c2.y);
+
+    if(spinner.activeMode == BUILD && spinner.modes[BUILD].unlocked){
         bMenu.Draw();
     }
 
-    if(spinner.activeMode == TOWN){
+    if(spinner.activeMode == TOWN && spinner.modes[TOWN].unlocked){
         tMenu.Draw();
     }
 
     spinner.Draw();
     DrawResources();
+
+    if(spinner.modes[BUILD].unlocked == false){
+        if(trees > 40 && plants > 50){
+            spinner.modes[BUILD].unlocked = true;
+        }   
+    }
+
+    if(spinner.modes[TOWN].unlocked == false){
+        if(population > 0){
+            spinner.modes[TOWN].unlocked = true;
+        }   
+    }
+
+    tooltips.forEach(tip=>{
+        if(tip.Hover()){
+            tip.Draw();
+        }
+    })
     
 }

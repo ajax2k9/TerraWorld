@@ -27,6 +27,7 @@ let treeTimer = new Timer(10);
 let farmTimer = new Timer(10);
 let HouseTimer = new Timer(30);
 let popDelay = 20;
+let book;
 
 function setup(){
     ship = new Ship();
@@ -38,9 +39,7 @@ function setup(){
     SetupUI();
     SetupBuildings();
 
-    let m = select("main");
-    let d = select(".instructions");
-    d.parent(m);
+    book = new Book();
 }
 
 function preload(){
@@ -56,6 +55,8 @@ function preload(){
     icons["ice"] = loadImage('images/ice.png');
     icons["science"] = loadImage('images/science.png');
     icons["metal"] = loadImage('images/iron.png');
+    icons["trees"] = loadImage('images/trees.png');
+    icons["bread"] = loadImage('images/bread.png');
     icons["ore"] = loadImage('images/ore.png');
     icons["wood"] = loadImage('images/log.png');
     icons["population"] = loadImage('images/person.png');
@@ -247,9 +248,19 @@ function HandleKeys() {
       trees = 0;
 
       segments.forEach(s=>{
-        plants += s.plants.length;
-        trees += s.trees.length;
+        s.plants.forEach(p=>{
+            if(p.age>=100){
+                plants++;
+            }
+        });
+
+        s.trees.forEach(t=>{
+            if(t.age>=100){
+                trees++;
+            }
+        });
       });
+      
       let tree_cutters = population *jobs[0];
       let farmers = population *jobs[1];
       let cut_tree = false;
@@ -338,6 +349,7 @@ function HandleKeys() {
   function mousePressed(){
     bMenu.CheckClicks();
     asteroid.Stall();
+    book.CheckClicks(mouseX,mouseY);
   }
 
 
@@ -372,5 +384,6 @@ function draw(){
     HandleEffects();
 
     DrawUI();
+    //book.Draw();
     
 }
