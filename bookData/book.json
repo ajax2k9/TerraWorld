@@ -1,0 +1,68 @@
+{   "imagesDir":"images",
+
+    "pages":[
+        {
+            "title":"Welcome To TerraWorld!",
+            "icon":"cool.png",
+            "body":"This world is barren and needs your help! You will need to make it grow, populate it , and possibly defend it..."
+        },
+        {
+            "title":"Getting started",
+            "icon":"click asteroid.png",
+            "body":"See the Asteroids floating around? Click them , and watch them smash into the Planet! Destructive, sure, but it is the main source of ice, which will melt into water."
+        },
+        {
+            "title":"Firing the lasers!",
+            "icon":"changing to farm land.png",
+            "body":"Press \"Q\" and \"E\" to set menu to \"Land\" or \"Farm\". Then hold Space and sweep the ship with \"A\" and \"D\" to set the land before for forest or farmland"
+        },
+        {
+            "title":"Storms and Growth",
+            "icon":"changing to farm land.png",
+            "body":"As the lake grows, storms will appear, and rain on the planet below, growing plants and trees. Try growing 40 plants and 100 trees to see what happens next!" 
+        },
+        {
+            "title":"Storms and Growth",
+            "icon":"changing to farm land.png",
+            "body":"As the lake grows, storms will appear, and rain on the planet below, growing plants and trees. Try growing 40 plants and 100 trees to see what happens next!" 
+        },
+        {
+            "title":"Bring in the People",
+            "icon":"changing to farm land.png",
+            "body":"A new Menu option has appeared! Navigate to the Build Menu, and build the Rocket Platform" 
+        },
+        {
+            "title":"Town Mayor",
+            "icon":"changing to farm land.png",
+            "body":"You now have access to the Town Menu. Here you can see the population, the happiness level, and the job priority tabs" 
+        },
+        {
+            "title":"Setting Jobs",
+            "icon":"changing to farm land.png",
+            "body":"The cards in the Town Menu set the job priority. Clicking a card will set it as top priority, and the surrounding cards as secondary" 
+        },
+        {
+            "title":"Population Growth",
+            "icon":"changing to farm land.png",
+            "body":"the town needs food, without it they will die! Try to get your population up to 200" 
+        },
+        {
+            "title":"Time To mine!",
+            "icon":"changing to farm land.png",
+            "body":"To get anywhere tech wise we need to some metal. Lets dig!" 
+        },
+        {
+            "title":"Hot stuff",
+            "icon":"changing to farm land.png",
+            "body":"The smelter takes in ore, oxygen, and wood, and returns with some valuable metal bars" 
+        },
+        {
+            "title":"Study time",
+            "icon":"changing to farm land.png",
+            "body":"The research tab brings in all kinds of goodies, but to get started, send some of your dudes to research in the jobs tab." 
+        }
+
+
+        
+    ]
+}

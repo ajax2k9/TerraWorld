@@ -87,13 +87,13 @@ class Button{
                 textAlign(CENTER,CENTER);
                 text(this.name,this.x+this.w/2,this.y+this.h/2);
             }
-
+            imageMode(CENTER);
             if(this.icon != undefined){
-                image(this.icon,this.x + this.w/2 - this.icon.width/2,this.y+this.h/2 - this.icon.height/2);
+                image(this.icon,this.x+this.w/2,this.y+this.h/2);
 
             } 
             if(this.showCheck){
-                image(this.check,this.x + this.w/2 - this.check.width/2,this.y+this.h/2 - this.check.height/2);
+                image(this.check,this.x,this.y);
             }
 
         } else {
@@ -103,6 +103,12 @@ class Button{
                 textAlign(CENTER,CENTER);
                 text(this.name,this.x,this.y);
             }
+
+            if(this.icon != undefined){
+                imageMode(CENTER);
+                image(this.icon,this.x,this.y,this.w,this.w);
+
+            } 
         }
     }
 }

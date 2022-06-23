@@ -1,10 +1,11 @@
 class Book{
     constructor(){
         this.active = true;
-        this.next = new BookButton(">",width/2 + 280,height/2+285,()=>this.NextPage());
-        this.prev = new BookButton("<",width/2 - 280,height/2+285,()=>this.PrevPage());
+        this.next = new BookButton(">",width/2 + 280,height/2+275,()=>this.NextPage());
+        this.prev = new BookButton("<",width/2 - 280,height/2+275,()=>this.PrevPage());
         this.close = new BookButton("x",width/2 +280,height/2-275,()=>{this.active = false;})
         this.currPage = 0;
+        this.unlockedPages = 1;
         this.pages = [];
     }
 
@@ -13,12 +14,12 @@ class Book{
     }
     NextPage(){
         this.currPage++;
-        this.currPage = min(this.pages.length - 1 , max(0,this.currPage));
+        this.currPage = min(this.unlockedPages-1  , max(0,this.currPage));
     }
 
     PrevPage(){
         this.currPage--;
-        this.currPage = min(this.pages.length - 1 , max(0,this.currPage));
+        this.currPage = min(this.unlockedPages-1  , max(0,this.currPage));
     }
 
     AddPage(jObj){
@@ -36,6 +37,15 @@ class Book{
         this.active = true;
     }
 
+    GoToPage(_page){
+        this.Show();
+        this.currPage = _page;
+    }
+
+    UnlockPages(_maxPage){
+        this.unlockedPages = max(this.unlockedPages,_maxPage);
+    }
+
     Draw(){
         if(this.active == false) return;
 
@@ -43,15 +53,17 @@ class Book{
         noStroke();
 
         rect(width/2-300,height/2-300,600,600,20);
+        fill(210,210,200);
+        rect(width/2-290,height/2-290,580,580,10);
         let page_size = this.pages.length;
-        if(page_size > 0 && this.currPage < page_size) this.pages[this.currPage].Draw();
+        if(page_size > 0 && this.currPage <= this.unlockedPages) this.pages[this.currPage].Draw();
     
-        textAlign(CENTER);
+        textAlign(CENTER,CENTER);
         textSize(18);
         noStroke();
-        fill(255,255,255);
+        fill(0);
         let idx = this.currPage + 1;
-        text(idx + " / " + page_size, width/2, height/2+285);
+        text(idx + " / " + this.unlockedPages, width/2, height/2+275);
         
         this.next.Draw();
         this.prev.Draw();
@@ -73,15 +85,15 @@ class Page{
     Draw(){
         noStroke();
         textFont("consolas")
-        fill(255,255,255);
+        fill(0);
         textAlign(CENTER);
-        textSize(22);
+        textSize(20);
         text(this.title,this.x ,this.y + 30);
-        textAlign(LEFT);
+        textAlign(LEFT,TOP);
         text(this.body,this.x-550/2 ,this.y + 260,550,300);
         
         if(this.icon != undefined){
-            stroke(255,255,255);
+            stroke(0);
             noFill();
             strokeWeight(2);
             let h = 190;
@@ -93,7 +105,7 @@ class Page{
         }
 
         strokeWeight(1);
-        stroke(255,255,255);
+        stroke(0);
         line(this.x-550/2,this.y+40,this.x+550/2,this.y+40);
         line(this.x-550/2,this.y+250,this.x+550/2,this.y+250);
         line(this.x-550/2,this.y+560,this.x+550/2,this.y+560);
@@ -112,12 +124,11 @@ class BookButton{
 
     Draw(){
         noStroke();
-        fill(255,255,255);
-        textAlign(CENTER);
+        fill(0);
+        textAlign(CENTER,CENTER);
         noStroke();
         textSize(22);
         text(this.text,this.x ,this.y);
-
     }
 
     CheckClicks(mX, mY){

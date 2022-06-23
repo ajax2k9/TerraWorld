@@ -1,6 +1,7 @@
 let spinner;
 let bMenu;
 let tMenu;
+let bookButton;
 let imgs = [];
 let icons = {};
 let tooltips=[];
@@ -84,7 +85,7 @@ class Spinner{
             circle(c.x+this.x,c.y+this.y,70*m.size);
 
             if(m.unlocked){
-                image(imgs[m.index],c.x+this.x-imgs[m.index].width/2,c.y+this.y-imgs[m.index].height/2);
+                image(imgs[m.index],c.x+this.x,c.y+this.y);
             }
         });
 
@@ -100,6 +101,7 @@ let resSpacing = 70;
 let tOffs = 20;
 
 function Resource(icon,res,desc){
+    imageMode(CORNER);
     image(icons[icon],resX,5,32,32);
     text(DrawNumber(res),resX+tOffs,30);
     new ToolTip(resX,0,50,50,icon);
@@ -158,7 +160,7 @@ class BuildMenu{
         });
 
         b2.AddReq(new ItemStack("wood",1000));
-        b2.AddReq(new ItemStack("population",10));
+        b2.AddReq(new ItemStack("population",200));
         this.buttons.push(b2);
 
         let b3 = new Button(this.x +350,this.y,100,50,true).SetIcon(icons["smelter"]).SetCallback(()=>{
@@ -186,6 +188,20 @@ class BuildMenu{
         b4.AddReq(new ItemStack("metal",1000));
         b4.AddReq(new ItemStack("wood",1000));
         this.buttons.push(b4);
+
+        let b5 = new Button(this.x +550,this.y,100,50,true).SetIcon(icons["cannon"]).SetCallback(()=>{
+            
+            if(metal > 1000 && wood > 1000 && !buildings["cannon"].built && !buildings["cannon"].building){
+                buildings["cannon"].building = true;
+                return true;
+            }
+            return false;
+        });
+
+        b5.AddReq(new ItemStack("research",3000));
+        b5.AddReq(new ItemStack("oxygen",2000));
+        b5.AddReq(new ItemStack("metal",3000));
+        this.buttons.push(b5);
     }
 
     CheckClicks(){
@@ -265,6 +281,9 @@ function SetupUI(){
   spinner = new Spinner(0,height);
   bMenu = new BuildMenu(0,height-50);
   tMenu = new TownMenu(0,height-80);
+  bookButton = new Button(width - 20,20,32,32,false).SetIcon(icons["bookbutt"]).SetCallback(()=>{
+            book.Show();
+});
 }
 
 class ItemStack{
@@ -287,6 +306,7 @@ function DrawUI(){
 
     noFill();
     stroke(255,255,255);
+    strokeWeight(1);
     arc(spinner.x,spinner.y,340,340,rads(-60),rads(-30));
     let c1 = Cartesian(170,-20);
     noStroke();
@@ -324,5 +344,7 @@ function DrawUI(){
             tip.Draw();
         }
     })
+
+    bookButton.Draw();
     
 }

@@ -40,6 +40,8 @@ function setup(){
     SetupBuildings();
 
     book = new Book();
+    LoadBookJSON("bookData/book.json",book);
+    cannon = new Cannon();
 }
 
 function preload(){
@@ -71,6 +73,8 @@ function preload(){
     icons["axe"] = loadImage('images/axe.png');
     icons["scythe"] = loadImage('images/scythe.png');
     icons["flask"] = loadImage('images/flask.png');
+    icons["bookbutt"] = loadImage('images/bookbutt.png');
+    icons["cannon"] = loadImage('images/cannon.png');
 }
 
 function MakeSegments(){
@@ -350,6 +354,7 @@ function HandleKeys() {
     bMenu.CheckClicks();
     asteroid.Stall();
     book.CheckClicks(mouseX,mouseY);
+    bookButton.Clicked();
   }
 
 
@@ -384,6 +389,8 @@ function draw(){
     HandleEffects();
 
     DrawUI();
-    //book.Draw();
+    book.Draw();
+
+    
     
 }
