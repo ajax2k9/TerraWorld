@@ -1,26 +1,16 @@
 p5.disableFriendlyErrors = true; // disables FES
+
 let spacing = 10;
 let ship; 
 let rad = 300;
 let segments = [];
 let jobs = [];
-
-let lake =  0;
-let storage = 0;
+let inventory = {};
 let max_storage = 50;
-let oxygen = 0;
 let tx_rate = 0.001;
-let food = 0;
-let wood = 0;
-let science = 0;
-let ore = 0;
-let metal = 0;
 let clouds;
-let asteroid;
+asteroids = [];
 let rocket;
-let plants;
-let trees;
-let population = 0;
 let maxPop = 0;
 let houses = [];
 let treeTimer = new Timer(10);
@@ -29,19 +19,35 @@ let HouseTimer = new Timer(30);
 let popDelay = 20;
 let book;
 
+function AddItems(){
+    AddItem("lake");
+    AddItem("storage");
+    AddItem("oxygen");
+    AddItem("food");
+    AddItem("wood");
+    AddItem("science");
+    AddItem("ore");
+    AddItem("metal");
+    AddItem("plants");
+    AddItem("trees");
+    AddItem("population");
+}
+
 function setup(){
+    AddItems();
     ship = new Ship();
     clouds = new Clouds();
-    asteroid = new Asteroid();
+    asteroids.push(new Asteroid());
+    asteroids.push(new Asteroid());
+    asteroids.push(new Asteroid());
     rocket = new Rocket();
     let c = createCanvas(800,800);
     MakeSegments();
     SetupUI();
     SetupBuildings();
 
-    book = new Book();
-    LoadBookJSON("bookData/book.json",book);
-    cannon = new Cannon();
+   // book = new Book();
+   // LoadBookJSON("bookData/book.json",book);
 }
 
 function preload(){
@@ -64,7 +70,7 @@ function preload(){
     icons["population"] = loadImage('images/person.png');
     icons["plants"] = loadImage('images/wheat.png');
     icons["oxygen"] = loadImage('images/oxygen.png');
-    icons["rocket"] = loadImage('images/rocketbutt.png');
+    icons["platform"] = loadImage('images/rocketbutt.png');
     icons["house"] = loadImage('images/house.png');
     icons["lab"] = loadImage('images/lab.png');
     icons["mine"] = loadImage('images/mine.png');
@@ -153,8 +159,9 @@ function HandleKeys() {
     ship.y = rad*sin(radians);
 
     if (keyIsDown(32)) {
+        
         let ang = XN360(ship.FireLaser()+270);
-        let index = Math.floor(ang/spacing);
+        let index = Math.floor(ang/10);
         let s = segments[index];
         let i = index - 1;
         
@@ -194,48 +201,47 @@ function HandleKeys() {
       circle(0,0,65);
 
       fill(255,255,255);
-      let level = LogRatio(storage,5);
+      let level = LogRatio(inventory["storage"],5);
       circle(0,0,65 * level);
   }
 
   function DrawAtmo(){
-      stroke(200,200,255,200*min(oxygen/10000,1));
+      stroke(200,200,255,200*min(inventory["oxygen"]/10000,1));
       strokeWeight(10);
-      fill(200,200,255,100*min(oxygen/10000,1));
+      fill(200,200,255,100*min(inventory["oxygen"]/10000,1));
       circle(0,0,500);
 
   }
 
   function HandlePopulation(){
-      let eat_rate = population*0.001;
+    let pop = inventory["population"];
+    let food = inventory["food"];
+      let eat_rate = pop*0.001;
       if(eat_rate > food){
           if(popDelay > 0){// countdown till famine starts
               popDelay -=0.01;
           } else {
-            population-=0.0001*population;
-            population = max(1,population);
+            pop-=0.0001*pop;
+            pop = max(1,pop);
           }
           food = 0;
       } else {
         popDelay = 20;// reset famine
         food -= eat_rate;
-        population+=population*0.01;
-        population = min(maxPop,population);
+        pop += pop*0.01;
+        pop = min(maxPop,pop);
       }
 
-      if(jobs[2] > 0.9){
-          if(HouseTimer.Update()){
-              let cost = (houses.length + 1) * 400;
-              if(wood >=cost){
-                  AddHouse();
-                  wood -= cost;
-              }
-          }
-      }
-
+      inventory["population"] = pop;
+      inventory["food"] = food;
   }
 
   function Simulate(){
+      let storage = inventory["storage"];
+      let lake = inventory["lake"];
+      let population = inventory["population"];
+      let oxygen = inventory["oxygen"];
+
       maxPop = 10 + houses.length*20;
       if(storage>0){
           let transfer = storage*tx_rate; 
@@ -248,8 +254,8 @@ function HandleKeys() {
       lake-=diff;
       clouds.Simulate();
 
-      plants = 0;
-      trees = 0;
+      let plants = 0;
+      let trees = 0;
 
       segments.forEach(s=>{
         s.plants.forEach(p=>{
@@ -340,6 +346,14 @@ function HandleKeys() {
         }
       });
 
+
+      inventory["plants"] = plants;
+      inventory["trees"] = trees;
+
+      inventory["storage"] = storage;
+      inventory["lake"] = lake;
+      inventory["population"] = population;
+      inventory["oxygen"] = oxygen;
       if(rocket.landed == false && buildings["platform"].built){
         rocket.angle = buildings["platform"].angle;
         rocket.landing = true;
@@ -348,13 +362,15 @@ function HandleKeys() {
       if(population > 0){
         HandlePopulation();
       }
+
+
   } 
 
   function mousePressed(){
     bMenu.CheckClicks();
-    asteroid.Stall();
-    book.CheckClicks(mouseX,mouseY);
-    bookButton.Clicked();
+    asteroids.forEach(a=>a.Stall());
+    //book.CheckClicks(mouseX,mouseY);
+    //bookButton.Clicked();
   }
 
 
@@ -378,18 +394,18 @@ function draw(){
 
     stroke(100,100,255);
     fill(50,50,255);
-    let level = Math.min(Math.log10(lake)/4,1);
+    let level = Limit(Math.log10(inventory["lake"])/4,0,1);
     circle(0,0,200* level);
 
     DrawStorage();
     
-    asteroid.Draw();
+    asteroids.forEach(a=>a.Draw());
     rocket.Draw();
     translate(-width/2,-height/2);
     HandleEffects();
 
     DrawUI();
-    book.Draw();
+   // book.Draw();
 
     
     

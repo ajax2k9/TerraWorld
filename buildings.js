@@ -18,7 +18,7 @@ class Rocket{
        if(this.r<=180){
            this.landing = false;
            this.landed = true;
-           population = 10;
+           inventory["population"] = 10;
        }
    }
 
@@ -28,7 +28,7 @@ class Rocket{
             this.Land();
         }
 
-        if(this.landed && population == 0){
+        if(this.landed && inventory["population"] == 0){
         
         }
 
@@ -507,7 +507,7 @@ class Asteroid{
 
     Spawn(){
        let speed = Math.random()*0.3 + 0.5;
-       this.ang = Math.random()*360;
+       this.ang = Math.random() * 360;
        let r = 500;
        let c = Cartesian(r,this.ang);
        let v = Cartesian(speed,this.ang+135);
@@ -540,7 +540,7 @@ class Asteroid{
        this.pos.x+=this.speed.x;
        this.pos.y+=this.speed.y;
        if(d<140){
-           storage+=100;
+           inventory["storage"]+=100;
            this.Spawn();
        }
 
@@ -930,32 +930,50 @@ class house extends Building{
 class Cannon extends Building{
     constructor(){
         super(0.20,170);
-        this.building = true;
+        this.closestAster = undefined;
+        this.pid = new PID(0.2,0.005,0.1);
     }
     DrawBeam(){
         stroke(255);
         strokeWeight(4);
         let c = Cartesian(70,this.angle2+this.angle-90);
-        let c2 = Cartesian(400,this.angle2+this.angle-90);
+        let c2 = Cartesian(800,this.angle2+this.angle-90);
         line(c.x+this.x,c.y+this.y,c2.x+this.x,c2.y+this.y);
-        asteroid.health-=10;
+        this.closestAster.health-=1;
+        
     }
 
     Draw(){
+        fill(255);
+
+        this.angle = XN360(this.angle);
+
         super.Draw();
         if(this.built){
-            this.angle+=0.1;
-            if(dist(this.x,this.y,asteroid.pos.x, asteroid.pos.y)<200){
-                let ang = atan2(asteroid.pos.x-this.x ,this.y - asteroid.pos.y)* 180/PI - this.angle;
-                if(abs(ang - this.angle2) >=180){
-                    ang-=180;
-                }
-                this.angle2 += (ang - this.angle2)/20;
-                if(abs(ang - this.angle2)<5){
-                    this.DrawBeam();
-                }
+            this.angle-=0.2;
+
+            if(this.closestAster == undefined){
+                let smalldist = 400;
+                asteroids.forEach(a=>{
+                    let distance = dist(this.x,this.y,a.pos.x, a.pos.y);
+                    if( a.health > 0 && distance < smalldist){
+                        smalldist = distance;
+                        this.closestAster = a; 
+                    }
+                });
             } else {
-                this.angle2 += (0 - this.angle2)/20;
+            
+                let astroAng = XN360(XN360(atan2(this.closestAster.pos.x - this.x,-1*this.closestAster.pos.y + this.y)* 180/PI)- this.angle);
+                if(astroAng >=180)astroAng-=360;
+                if(this.closestAster.health > 0 && abs(astroAng) < 90){
+                    let ang = astroAng;
+                    this.angle2 += this.pid.Response(ang - this.angle2);
+                    this.DrawBeam();
+                } else {
+                    this.angle2 += this.pid.Response(0 - this.angle2);
+                }
+                let aster = this.closestAster;
+                if(aster.health <= 0 || dist(this.x,this.y,aster.pos.x, aster.pos.y) > 400)this.closestAster = undefined;
             }
         }
     }
@@ -1021,6 +1039,7 @@ function SetupBuildings(){
     buildings["lab"] = new lab();
     buildings["smelter"] = new smelter();
     buildings["cannon"] = new Cannon();
+    buildings["house"] = new house();
 }
 
 function AddHouse(){

@@ -52,6 +52,8 @@ class Spinner{
         }
         this.modes[FARM].unlocked = true;
         this.modes[LAND].unlocked = true;
+        this.modes[TOWN].unlocked = true;
+        this.modes[BUILD].unlocked = true;
     }
 
     Rotate(right = true){
@@ -122,15 +124,15 @@ function DrawResources(){
 
     resX = 0;
 
-    Resource("water",lake);
-    Resource("oxygen",oxygen);
-    Resource("plants",plants);
-    Resource("bread",food);
-    Resource("science",science);
-    Resource("ore",ore);
-    Resource("metal",metal);
-    Resource("wood",wood);  
-    Resource("trees",trees);  
+    Resource("water",inventory["lake"]);
+    Resource("oxygen",inventory["oxygen"]);
+    Resource("plants",inventory["plants"]);
+    Resource("bread",inventory["food"]);
+    Resource("science",inventory["science"]);
+    Resource("ore",inventory["ore"]);
+    Resource("metal",inventory["metal"]);
+    Resource("wood",inventory["wood"]);  
+    Resource("trees",inventory["trees"]);  
 }
 
 class BuildMenu{
@@ -138,70 +140,61 @@ class BuildMenu{
         this.buttons = [];
         this.x = _x;
         this.y= _y;
-        let b1 = new Button(this.x +150,this.y,100,50,true).SetIcon(icons["rocket"]).SetCallback(()=>{
-            
-            if(oxygen > 3000  && !buildings["platform"].built && !buildings["platform"].building){
-                buildings["platform"].building = true;
-                return true;
-            }
-            return false;
-        });
+        let spacing = 75;
 
-        b1.AddReq(new ItemStack("oxygen",3000));
-        this.buttons.push(b1);
+        let x = this.x+160;
+        let y = this.y;
+
+        let reqs = [["oxygen",1000]];
+        x = this.AddButton("platform",reqs,x,y,spacing,"Brings in the people!");
+
+        reqs = [["wood",1000],["population",2]];
+        x = this.AddButton("house",reqs,x,y,spacing,"Increases population by 5, can buy multiple times");
         
-        let b2 = new Button(this.x +250,this.y,100,50,true).SetIcon(icons["mine"]).SetCallback(()=>{
-            
-            if(wood > 1000 && population > 10 && !buildings["mine"].built && !buildings["mine"].building){
-                buildings["mine"].building = true;
-                return true;
-            }
-            return false;
+        reqs = [["wood",1000],["population",10]];
+        x = this.AddButton("mine",reqs,x,y,spacing, "Unlocks Miner Job, mines ore from the ground");
+        
+        reqs = [["wood",1000],["ore",1000]];
+        x = this.AddButton("smelter",reqs,x,y,spacing,"Unlocks Smelter Job, converts wood, ore, oxygen to Metal");
+
+        reqs = [["wood",1000],["metal",1000]];
+        x = this.AddButton("lab",reqs,x,y,spacing,"Unlocks Research Job and Opens Research Tab, gathers Research");
+    }
+    
+    AddButton(name,reqs,x,y,spacing, caption){
+        let b = new Button(x,y,50,50,true).SetIcon(icons[name]);
+        reqs.forEach(r=>{
+            b.AddReq(new ItemStack(r[0],r[1]));
         });
 
-        b2.AddReq(new ItemStack("wood",1000));
-        b2.AddReq(new ItemStack("population",200));
-        this.buttons.push(b2);
-
-        let b3 = new Button(this.x +350,this.y,100,50,true).SetIcon(icons["smelter"]).SetCallback(()=>{
-            
-            if(ore > 1000 && wood > 1000 && !buildings["smelter"].built && !buildings["smelter"].building){
-                buildings["smelter"].building = true;
-                return true;
+        b.SetCallback(()=>{
+            if(buildings[name].building || buildings[name].built){
+                return false;
             }
-            return false;
+
+            let tooExpenive = false;
+            b.reqs.forEach(r=>{
+                if(inventory[r.name] == undefined || inventory[r.name] < r.quant ){
+                    tooExpenive = true;
+                }
+            });
+
+            if(tooExpenive){
+                return false;
+            }
+
+            b.reqs.forEach(r=>{
+                inventory[r.name] -= r.quant;
+            });
+            buildings[name].building = true;
+            return true;
+
         });
 
-        b3.AddReq(new ItemStack("ore",1000));
-        b3.AddReq(new ItemStack("wood",1000));
-        this.buttons.push(b3);
+        b.caption = caption;
+        this.buttons.push(b);
+        return x + spacing;
 
-        let b4 = new Button(this.x +450,this.y,100,50,true).SetIcon(icons["lab"]).SetCallback(()=>{
-            
-            if(metal > 1000 && wood > 1000 && !buildings["lab"].built && !buildings["lab"].building){
-                buildings["lab"].building = true;
-                return true;
-            }
-            return false;
-        });
-
-        b4.AddReq(new ItemStack("metal",1000));
-        b4.AddReq(new ItemStack("wood",1000));
-        this.buttons.push(b4);
-
-        let b5 = new Button(this.x +550,this.y,100,50,true).SetIcon(icons["cannon"]).SetCallback(()=>{
-            
-            if(metal > 1000 && wood > 1000 && !buildings["cannon"].built && !buildings["cannon"].building){
-                buildings["cannon"].building = true;
-                return true;
-            }
-            return false;
-        });
-
-        b5.AddReq(new ItemStack("research",3000));
-        b5.AddReq(new ItemStack("oxygen",2000));
-        b5.AddReq(new ItemStack("metal",3000));
-        this.buttons.push(b5);
     }
 
     CheckClicks(){
@@ -220,15 +213,17 @@ class BuildMenu{
             if(b.Hover()){
                 
                 fill(255,255,255);
-                text("cost :",230,730);
                 
-                let x = 260;
+                let x = 200;
                 let y = 700;
+                textAlign(LEFT);
+                text(b.caption,x-16,735);
 
+                textAlign(CENTER);
                 b.reqs.forEach(r=>{
                     r.Draw(x,y);
                     x+=60;
-                });
+                }); 
             }
         });
     }
@@ -246,10 +241,10 @@ class TownMenu{
         let offsX = 310;
         let offsY = 60;
 
-        this.tabs.push(new Tab(this.x + offsX,this.y + offsY,icons["axe"]));
-        this.tabs.push(new Tab(this.x + offsX + spacing,this.y + offsY,icons["scythe"],color(100,100,0)));
-        this.tabs.push(new Tab(this.x + 310 + 120,this.y + 60,icons["house"],color(0,0,255)));
-        this.tabs.push(new Tab(this.x + 310 + 180,this.y + 60,icons["flask"],color(155,0,155)));
+        this.tabs.push(new Tab(this.x + offsX,this.y + offsY,icons["axe"],"wood cutting"));
+        this.tabs.push(new Tab(this.x + offsX + spacing,this.y + offsY,icons["scythe"],"harvesting",color(100,100,0)));
+        //this.tabs.push(new Tab(this.x + 310 + 120,this.y + 60,icons["house"],"house making, cost 1000 wood",color(0,0,255)));
+        this.tabs.push(new Tab(this.x + 310 + 120,this.y + 60,icons["flask"],"research",color(155,0,155)));
     }
 
     CheckClicks(){
@@ -263,10 +258,10 @@ class TownMenu{
         noStroke();
         fill(0,0,100,255);
         rect(this.x,this.y,width,height-this.y);
-        image(icons["population"],this.x+150,this.y+10,32,32);
+        image(icons["population"],this.x+160,this.y+20,32,32);
 
         fill(255,255,255);
-        text(floor(population),this.x + 180, this.y + 25);
+        text(floor(inventory["population"]),this.x + 180, this.y + 25);
         
         fill(0,0,10,255);
         rect(this.x+300,this.y+10,width-400,height-this.y,12);
@@ -290,6 +285,7 @@ class ItemStack{
     constructor(name,quant){
         this.icon = icons[name];
         this.quant = quant;
+        this.name = name;
     }
 
     Draw(x,y){
@@ -297,7 +293,7 @@ class ItemStack{
         stroke(0,0,0);
         strokeWeight(2);
         fill(255,255,255);
-        text(this.quant,x+20, y+30);
+        text(this.quant,x+20, y+10);
     }
 
 }
@@ -328,13 +324,13 @@ function DrawUI(){
     DrawResources();
 
     if(spinner.modes[BUILD].unlocked == false){
-        if(trees > 40 && plants > 50){
+        if(trees >= 40 && plants >= 50){
             spinner.modes[BUILD].unlocked = true;
         }   
     }
 
     if(spinner.modes[TOWN].unlocked == false){
-        if(population > 0){
+        if(inventory["population"] > 0){
             spinner.modes[TOWN].unlocked = true;
         }   
     }

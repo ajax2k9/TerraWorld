@@ -88,12 +88,13 @@ class Button{
                 text(this.name,this.x+this.w/2,this.y+this.h/2);
             }
             imageMode(CENTER);
+            
             if(this.icon != undefined){
                 image(this.icon,this.x+this.w/2,this.y+this.h/2);
 
             } 
             if(this.showCheck){
-                image(this.check,this.x,this.y);
+                image(this.check,this.x+this.w/2,this.y+this.h/2);
             }
 
         } else {
@@ -114,18 +115,24 @@ class Button{
 }
 
 class Tab extends Button{
-    constructor(_x,_y,_icon, _c = color(255,0,0)){
+    constructor(_x,_y,_icon,_tip, _c = color(255,0,0)){
         super(_x,_y,50,100,true);
         this.icon = _icon;
         this.index = jobs.length;
         this.color =_c;
         this.offs = 0;
+        this.tip = _tip;
         jobs.push(0);
     }
 
     Draw(){
         if(this.Hover()){
             curr_type = this.index;
+            noStroke();
+            fill(255);
+            textStyle(NORMAL);
+            textAlign(LEFT);
+            text(this.tip,160,height - 90);
         }
 
         this.ratio = 1 - abs(this.index - curr_type)/jobs.length;
@@ -136,7 +143,7 @@ class Tab extends Button{
         strokeWeight(4);
 
         rect(this.x,this.y - this.offs,this.w,this.h,6);
-        image(this.icon,this.x + this.w/2 - this.icon.width/2, this.y - this.offs + 10);
-        image(this.icon,this.x + this.w/2 - this.icon.width/2, this.y - this.offs + 10);
+        image(this.icon,this.x + this.w/2 , this.y - this.offs + 30);
+        image(this.icon,this.x + this.w/2 , this.y - this.offs + 30);
     }
 }

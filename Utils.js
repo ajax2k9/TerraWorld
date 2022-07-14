@@ -1,5 +1,5 @@
 function XN360(angle){
-    if(angle < 0) return 360-angle;
+    if(angle < 0) return 360+angle;
     if(angle >= 360) return angle - 360;
     return angle;
 }
@@ -68,3 +68,41 @@ class Timer{
         return (1-this.time/this.maxTime) * _mult;
     }
 }
+
+function Limit(val,_min,_max){
+    return Math.min(Math.max(_min,val),_max);
+}
+
+class PID{
+    constructor(_kp,_kd,_ki,_dt = 0.33){
+        this.kp = _kp;
+        this.kd = _kd;
+        this.ki = _ki;
+        this.errorInt = 0;
+        this.errorlast = 0;
+        this.dt = _dt;
+    }
+
+    Response(_error){
+        this.errorInt += _error * this.dt;
+        
+        let P = _error * this.kp;
+        let I =  this.errorInt * this.ki;
+        let D = (_error - this.errorlast)/this.dt * this.kd;
+
+
+        this.errorlast = _error;
+
+        return P + I + D;
+    }
+}
+
+
+
+function AddItem(name){
+    if(inventory[name] == undefined){
+        inventory[name] = 0;
+    }
+}
+
+
